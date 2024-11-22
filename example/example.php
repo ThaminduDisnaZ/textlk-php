@@ -1,27 +1,42 @@
 <?php
+// Your Text.lk token
+$apiToken = "115|zivPot1MVvKMEJfd8I4XqmGtM3xUZl5QWM8mLIx9e0a44806";
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// SMS sending endpoint
+$apiUrl = "https://text.lk/api/v3/sms/send";
 
-require '../vendor/autoload.php';
+// SMS details
+$data = [
+    "recipient" => "94764501212", // Replace with recipient's phone number (Sri Lankan format with country code)
+    "message"   => "Hello, this is a test message!", // Your message content
+    "sender_id" => "TEXTLK", // Replace with your sender ID (if applicable, else Text.lk default will apply)
+];
 
-use TextLK\SMS;
+// Initialize cURL session
+$ch = curl_init();
 
-// Set your API key and URL
-$api_key = 'YOUR_API_KEY';
+// Set cURL options
+curl_setopt($ch, CURLOPT_URL, $apiUrl);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data)); // Convert array to query string
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Receive server response
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    "Authorization: Bearer $apiToken", // Add the token in the Authorization header
+    "Content-Type: application/x-www-form-urlencoded" // Content type for POST data
+]);
 
-// Instantiate TextLK\SMS with the required arguments
-$SMS = new SMS($api_key);
+// Execute the request
+$response = curl_exec($ch);
 
-$data = array(
-    "recipient" => "9476000000",
-    "sender_id" => "TEXTLK",
-    "type" => "plain",
-    "message" => "Boom! Message from Text.lk"
-);
+// Check for errors
+if (curl_errno($ch)) {
+    echo "cURL error: " . curl_error($ch);
+} else {
+    // Decode the response (assumes it's JSON)
+    $result = json_decode($response, true);
+    print_r($result); // Print the result
+}
 
-echo $SMS->send($data);
-
-// echo $SMS->getBalance();
-
-// echo $SMS->getProfile();
+// Close cURL session
+curl_close($ch);
+?>
